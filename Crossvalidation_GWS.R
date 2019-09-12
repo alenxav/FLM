@@ -138,8 +138,8 @@ CV = function(y,gen,k=5,Seeds=1:20,SET=NULL,box=TRUE){
     cat('glmnet\n')
     
     # Boosting
-    timeQ_Boosting = system.time( f8 <- gbm.fit(x=gen[-w,],y=y[-w],distribution="gaussian",verbose=F,interaction.depth=3,n.trees=500) )[[3]]
-    ff8_Boosting <- predict(f8,gen[w,],500)
+    timeQ_Boosting = system.time( f8 <- gbm.fit(x=gen[-w,],y=y[-w],distribution="gaussian",verbose=F,interaction.depth=3,n.trees=1000) )[[3]]
+    ff8_Boosting <- predict(f8,gen[w,],1000)
     cat('gbm\n')
     
     # REML GBLUP
