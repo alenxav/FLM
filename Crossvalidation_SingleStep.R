@@ -1,5 +1,5 @@
 
-# Packages required: lme4, BGlR, asreml (or rrBLUP), eMM2 (or bWGR)
+# Packages required: lme4, BGLR, asreml (or rrBLUP), eMM2 (or bWGR)
 
 # Load data
 load("simulated_set.RData")
