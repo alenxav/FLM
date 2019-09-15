@@ -37,14 +37,13 @@ SingleStep_simulator = function(tbv, Gen, n = NULL, locs = NULL, SEED = 10){
     at = system.time(a <- mixed(y=Y,random=~ID,fixed=~ENV,data=DTA,X=list(ID=Gen),alg=emDE,maxit=5))[[3]]
     gav = Gen%*%a$Structure$ID
   }
-  
+
   # GREML
   timeK = system.time(ZZ <- tcrossprod(apply(Gen,2,function(x) x-mean(x) )))[[3]]
   timeK = system.time(K <- ZZ/mean(diag(ZZ)))[[3]] + timeK
   diag(K) = diag(K)+1e-8
   timeK = system.time(iK <- solve(K))[[3]] + timeK
-  rownames(iK)=colnames(iK)=rownames(Gen)
-  
+  rownames(iK)=colnames(iK)=rownames(Gen)  
   if(AS){
     require(asreml)
     bt = system.time(b <- asreml(Y~ENV,~ped(ID),data=DTA,ginverse=list(ID=iK)))[[3]] + timeK
@@ -64,16 +63,22 @@ SingleStep_simulator = function(tbv, Gen, n = NULL, locs = NULL, SEED = 10){
        system.time(wts <- 1/summary(c1)$coefficients[,2] )[[3]] +
        system.time(c2 <- BGLR(c1@beta,ETA=list(g=list(X=Gen[levels(c1@frame$ID),],model='BL')),verbose=F,weights=wts))[[3]]
   gcv = Gen%*%c2$ETA$g$b
-  
+                                                 
+  # RRSS
+  require(bWGR)
+  dt = system.time(d <- mixed(y=Y,random=~ID,fixed=~ENV,data=DTA,X=list(ID=Gen),alg=emML,maxit=5))[[3]]
+  gdv = Gen%*%d$Structure$ID
+                                             
   # Collect accuracies
   accA = cor(tbv,gav,use='p')
   accB = cor(tbv,gbv,use='p')
   accC = cor(tbv,gcv,use='p')
-  cat('\n Accuracy:',paste(c('FLMSS','GBLUP','TWO-STEPS'),round(c(accA,accB,accC),3)),'\n\n')
+  accD = cor(tbv,gdv,use='p')
+  cat('\n Accuracy:',paste(c('FLMSS','GBLUP','TWO-STEPS','RRSS'),round(c(accA,accB,accC,accD),3)),'\n\n')
   
   # Output
-  ET = c(FLMSS=at, GBLUP=bt, TWOSTEPS=ct)
-  PA = c(FLMSS=accA, GBLUP=accB, TWOSTEPS=accC)
+  ET = c(FLMSS=at, GBLUP=bt, TWOSTEPS=ct, RRSS=dt)
+  PA = c(FLMSS=accA, GBLUP=accB, TWOSTEPS=accC, RRSS=accD)
   
   # Return
   out=list(ET=ET,PA=PA)
