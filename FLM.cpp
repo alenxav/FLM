@@ -34,5 +34,8 @@ SEXP FLM(NumericVector y, NumericMatrix X){
   for(int k=0; k<n; k++){fit[k]=mu+sum(X(k,_)*b);}
   // Return output
   return List::create(Named("mu")=mu,
-                      Named("b")=b, Named("fit")=fit,
-                      Named("T2")=1/iTau2, Named("Ve")=Ve);}
+                      Named("b")=b,
+                      Named("fit")=fit,
+                      Named("T2")=1/iTau2,
+                      Named("Ve")=Ve,
+                      Named("h2")=1-Ve/var(y));}
