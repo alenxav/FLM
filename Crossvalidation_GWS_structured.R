@@ -41,10 +41,9 @@ CV = function(y,z,gen,fam,numCV=20){
       layer_dense(units = 8, input_shape = ncol(gen)) %>%
       layer_activation_leaky_relu() %>%
       #layer_dropout(rate = 0.40) %>%
-      #layer_dense(units = 32) %>%
       layer_dense(units = 4) %>%
       layer_activation_leaky_relu() %>%
-      #layer_dropout(rate = 0.20) %>%
+      #layer_dropout(rate = 0.10) %>%
       layer_dense(units = 1)
     model %>% compile( loss = "mse",
                        optimizer = "sgd",#'adam',
@@ -66,8 +65,8 @@ CV = function(y,z,gen,fam,numCV=20){
     Model3 = emML(y[-w],gen[-w,])
     # XGBoost
     Model4 = xgboost(data = gen[-w,], label = y[-w],verbose = F,
-                     params = list(subsample=0.9, max_depth=7),
-                     nthread = 2,nrounds=100)
+                     params = list(subsample=0.5, max_depth=5),
+                     nthread = 2,nrounds=300)
     # RFR
     Model5 = ranger(y~.,data.frame(y=y,gen)[-w,])
     # DNN
