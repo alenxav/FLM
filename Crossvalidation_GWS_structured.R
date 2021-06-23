@@ -88,7 +88,7 @@ CV = function(y,z,gen,fam,numCV=20){
     Prd_M2 = c(EG$vectors[w,]%*%Model2$b) # RKHS
     Prd_M3 = c(gen[w,]%*%Model3$b) # RR
     Prd_M4 = predict(Model4,gen[w,]) # XGB
-    Prd_M5 = c(predict(Model5,gen[w,])$predictions) # RFR
+    Prd_M5 = c(predict(Model5,data.frame(gen[w,]))$predictions) # RFR
     Prd_M6 = c(predict(Model6,gen[w,])) # DNN 
     Prd_M7 = c(gen[w,]%*%Model7$ETA$gen$b) # BB
     
