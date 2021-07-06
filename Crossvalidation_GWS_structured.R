@@ -33,20 +33,17 @@ CV = function(y,z,gen,fam,numCV=20){
   EG$values = EG$values[1:NumEgVal]
   
   # Build Keras model
-  # source('small_dnn_funct.R')
   cat('Compile DNN model\n')
   build_model <- function() {
     model <- keras_model_sequential() %>%
-      #layer_dense(units = 64, input_shape = ncol(gen)) %>%
       layer_dense(units = 8, input_shape = ncol(gen)) %>%
       layer_activation_leaky_relu() %>%
-      #layer_dropout(rate = 0.40) %>%
+      layer_dropout(rate = 0.10) %>%
       layer_dense(units = 4) %>%
       layer_activation_leaky_relu() %>%
-      #layer_dropout(rate = 0.10) %>%
       layer_dense(units = 1)
     model %>% compile( loss = "mse",
-                       optimizer = "sgd",#'adam',
+                       optimizer = 'adam',#"sgd",
                        metrics = 'mean_squared_error' )
     return(model)}
   
@@ -67,7 +64,7 @@ CV = function(y,z,gen,fam,numCV=20){
     # GBLUP
     Model3 = emML(y[-w2],gen[-w2,])
     # XGBoost
-    Model4 = xgboost(data=gen[-w2,],label=y[-w2],verbose=F,params=list(subsample=0.75, max_depth=6),nthread=2,nrounds=300)
+    Model4 = xgboost(data=gen[-w2,],label=y[-w2],verbose=F,params=list(subsample=0.75,eta=0.05,max_depth=6),nthread=2,nrounds=100)
     # RFR
     Model5 = ranger(y~.,data.frame(y=y,gen)[-w2,])
     # DNN
