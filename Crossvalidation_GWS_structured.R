@@ -57,27 +57,25 @@ CV = function(y,z,gen,fam,numCV=20){
     # FIT MODELS #
     ##############
     
-    # FLM
-    Model1 = emDE(y[-w],gen[-w,])
-    # RKHS
-    Model2 = emML(y[-w],EG$vectors[-w,],EG$values)
-    # GBLUP
-    Model3 = emML(y[-w],gen[-w,])
-    # XGBoost
-    Model4 = xgboost(data = gen[-w,], label = y[-w],verbose = F,
-                     params = list(subsample=0.5, max_depth=5),
-                     nthread = 2,nrounds=300)
-    # RFR
-    Model5 = ranger(y~.,data.frame(y=y,gen)[-w,])
-    # DNN
-    # Model6 = dnn(matrix(y[-w]),gen[-w,])
-    Model6 <- build_model()
-    history <- Model6 %>% fit( gen[-w,], y[-w],
-                               epochs = 100, batch_size = min(300,nrow(gen[-w,])),
-                               validation_split = 0.0,verbose=0)
+    wNA = which(is.na(y))
+    w2 = unique(c(w,wNA))
 
+    # FLM
+    Model1 = emDE(y[-w2],gen[-w2,])
+    # RKHS
+    Model2 = emML(y[-w2],EG$vectors[-w2,],EG$values)
+    # GBLUP
+    Model3 = emML(y[-w2],gen[-w2,])
+    # XGBoost
+    Model4 = xgboost(data=gen[-w2,],label=y[-w2],verbose=F,params=list(subsample=0.75, max_depth=6),nthread=2,nrounds=300)
+    # RFR
+    Model5 = ranger(y~.,data.frame(y=y,gen)[-w2,])
+    # DNN
+    Model6 <- build_model()
+    history <- Model6 %>% fit( gen[-w2,], y[-w2],epochs = 100, batch_size = min(300,nrow(gen[-w,])),validation_split = 0.0,verbose=0)
+    
     # BayesB
-    Model7 = BGLR(y[-w],ETA=list(gen=list(X=gen[-w,],model='BayesB')),verbose=F)
+    Model7 = BGLR(y[-w2],ETA=list(gen=list(X=gen[-w2,],model='BayesB')),verbose=F)
     
     
     ###########
