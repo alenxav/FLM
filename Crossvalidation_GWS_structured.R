@@ -42,8 +42,7 @@ CV = function(y,z,gen,fam,numCV=20){
       layer_dense(units = 4) %>%
       layer_activation_leaky_relu() %>%
       layer_dense(units = 1)
-    model %>% compile( loss = "mse",
-                       optimizer = 'adam',#"sgd",
+    model %>% compile( loss = "mse", optimizer = 'adam',
                        metrics = 'mean_squared_error' )
     return(model)}
   
@@ -69,8 +68,9 @@ CV = function(y,z,gen,fam,numCV=20){
     Model5 = ranger(y~.,data.frame(y=y,gen)[-w2,])
     # DNN
     Model6 <- build_model()
-    history <- Model6 %>% fit( gen[-w2,], y[-w2],epochs = 100, batch_size = min(300,nrow(gen[-w,])),validation_split = 0.0,verbose=0)
-    
+    history <- Model6 %>% fit( gen[-w2,], y[-w2],epochs = 100,
+                               batch_size = min(300,nrow(gen[-w,])),
+                               validation_split = 0.1,verbose=0)    
     # BayesB
     Model7 = BGLR(y[-w2],ETA=list(gen=list(X=gen[-w2,],model='BayesB')),verbose=F)
     
@@ -89,16 +89,9 @@ CV = function(y,z,gen,fam,numCV=20){
     
     Y = y[w]
     Z = z[w]
-    # PRD = cbind(Y=Y,Z=Z,Prd_M1,Prd_M2,Prd_M3,Prd_M4,Prd_M5,Prd_M6,Prd_M7)
-    # mods = c('GBLUP','BAYESB','FLM','RKHS','XGBOOST','RFOREST','DNN')
-    PRD = cbind(Y=Y,Z=Z,
-                Prd_M3,Prd_M7,Prd_M1,
-                Prd_M2, # RKHS
-                Prd_M5, Prd_M4,
-                Prd_M6)
+    PRD = cbind(Y=Y,Z=Z,Prd_M3,Prd_M7,Prd_M1,Prd_M2,Prd_M5, Prd_M4, Prd_M6)
     mods = c('BLUP','BB','FLM','RKHS','RFR','XGB','DNN')
-    
-    
+        
     ######################
     # GET PREDICTABILITY #
     ######################
@@ -205,22 +198,33 @@ plot.CV = function(x,...){
   boxplot(x$IF,las=2,ylab='Predictability',main='Single-family',...);sep()
 }
 
+# Merging function
+c.CV = function(fit1,fit2){
+  fit = list(); class(fit) = 'CV'
+  fit[['WF']] = rbind(fit1[[1]],fit2[[1]])
+  fit[['AF']] = rbind(fit1[[2]],fit2[[2]])
+  fit[['LOO']] = rbind(fit1[[3]],fit2[[3]])
+  fit[['IF']] = rbind(fit1[[4]],fit2[[4]])
+  return(fit)
+}
+
 # Small example
 if(F){
   data(tpod,package = 'bWGR')
   z = y
   SNPset = 1:50
-  fit = CV(y,z,gen,fam,1:100)
-  plot(fit,col=rainbow(8))  
+  fit1 = CV(y,z,gen,fam,5)
+  fit2 = CV(z,y,gen,fam,5)
+  fit = c(fit1,fit2)
+  plot(fit,col=rainbow(7))  
 }
+
 
 # Big example
 if(F){
-  set.seed(0)
-  #dta1 = SoyNAM::BLUP(env = c(1,4,6),rm.rep = T, family = 1:18) # IA/IL/IN 2012
-  #dta2 = SoyNAM::BLUP(env = c(2,5,7),rm.rep = T, family = 1:18) # IA/IL/IN 2013
-  dta1 = SoyNAM::BLUP(env = c(1,3,4,6,8,13,14),rm.rep = T, family = 1:24) # 2011+2012 (NE/IA/IL/IN/KS)
-  dta2 = SoyNAM::BLUP(env = c(2,5,7,9),rm.rep = T, family = 1:24) # IA/IL/IN/KS 2013
+  set.seed(0)  
+  dta1 = SoyNAM::BLUP(env = c(1,3,4,6,8,13,14),rm.rep = T, family = 1:12) # 2011+2012 (NE/IA/IL/IN/KS)
+  dta2 = SoyNAM::BLUP(env = c(2,5,7,9),rm.rep = T, family = 1:12) # IA/IL/IN/KS 2013
   w=which((!is.na(dta1$Phen))&(!is.na(dta2$Phen)))
   y=dta1$Phen[w]
   z=dta2$Phen[w]
