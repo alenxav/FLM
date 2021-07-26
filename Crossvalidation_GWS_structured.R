@@ -195,7 +195,7 @@ plot.CV = function(x,...){
   boxplot(x$AF,las=2,ylab='Predictability',main='Across-family',...);sep()
   boxplot(x$WF,las=2,ylab='Predictability',main='Within-family',...);sep()
   boxplot(x$LOO,las=2,ylab='Predictability',main='Leave-family-out',...);sep()
-  boxplot(x$IF,las=2,ylab='Predictability',main='Single-family',...);sep()
+  boxplot(x$IF,las=2,ylab='Predictability',main='Intra-family',...);sep()
 }
 
 # Merging function
@@ -208,14 +208,29 @@ c.CV = function(fit1,fit2){
   return(fit)
 }
 
+# Summary function
+summary.CV = function(object,method='All'){
+  if(method=='All'){
+    x0 = sapply(object, function(x) mean(x))
+    x1 = sapply(object, function(x) mean(x[,1:7]))
+    x2 = sapply(object, function(x) mean(x[,8:14]))
+  }else{
+    x0 = sapply(object, function(x) mean(x[,which(colnames(x)==method)]))
+    x1 = sapply(object, function(x) mean((x[,1:7])[,method]))
+    x2 = sapply(object, function(x) mean((x[,8:14])[,method]))
+  }
+  return(rbind(Overall=x0,TestEnv=x1,UnteEnv=x2))
+}
+
 # Small example
 if(F){
   data(tpod,package = 'bWGR')
-  z = y
+  z = rnorm(length(y),y,0.1)
   SNPset = 1:50
   fit1 = CV(y,z,gen,fam,5)
   fit2 = CV(z,y,gen,fam,5)
   fit = c(fit1,fit2)
+  summary(fit,'BLUP')
   plot(fit,col=rainbow(7))  
 }
 
