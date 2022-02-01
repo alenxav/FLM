@@ -12,7 +12,6 @@ CV = function(y,ys,gen,numCV=20){
   require(BGLR)
   require(keras)
   require(xgboost)
-  require(SoyNAM)
   
   ###############
   # Get Kernels #
@@ -75,7 +74,7 @@ CV = function(y,ys,gen,numCV=20){
     
     # MV
     yyy = cbind(y[-w2],ys[-w2,])
-    Model8 = SoyNAM::mrr(yyy,gen[-w2,])
+    Model8 = mrr(yyy,gen[-w2,])
     
     
     ###########
